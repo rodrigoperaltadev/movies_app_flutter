@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:movies_app/models/models.dart';
 import 'package:movies_app/routes/routes.dart';
 
 class MovieSlider extends StatelessWidget {
-  const MovieSlider({Key? key}) : super(key: key);
+  final List<Movie> movies;
+  final String title;
+
+  const MovieSlider({Key? key, required this.movies, required this.title})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +16,12 @@ class MovieSlider extends StatelessWidget {
       height: 260,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _MovieSliderTitle(),
-          SizedBox(height: 10),
-          _MoviesList()
+        children: [
+          _MovieSliderTitle(
+            title: title,
+          ),
+          const SizedBox(height: 10),
+          _MoviesList(movies: movies)
         ],
       ),
     );
@@ -22,42 +29,76 @@ class MovieSlider extends StatelessWidget {
 }
 
 class _MovieSliderTitle extends StatelessWidget {
+  final String title;
   const _MovieSliderTitle({
     Key? key,
+    required this.title,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
-        'MovieSlider',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }
 }
 
-class _MoviesList extends StatelessWidget {
+class _MoviesList extends StatefulWidget {
+  final List<Movie> movies;
+
   const _MoviesList({
     Key? key,
+    required this.movies,
   }) : super(key: key);
+
+  @override
+  State<_MoviesList> createState() => _MoviesListState();
+}
+
+class _MoviesListState extends State<_MoviesList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent) {
+        print('Scrolled to bottom');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
         child: ListView.builder(
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
-            itemCount: 10,
+            itemCount: widget.movies.length,
             itemBuilder: (context, index) {
-              return const _MoviePoster();
+              final movie = widget.movies[index];
+              return _MoviePoster(movie: movie);
             }));
   }
 }
 
 class _MoviePoster extends StatelessWidget {
+  final Movie movie;
+
   const _MoviePoster({
     Key? key,
+    required this.movie,
   }) : super(key: key);
 
   @override
@@ -70,12 +111,12 @@ class _MoviePoster extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, AppRoutes.details,
-                arguments: 'movie-instance'),
+                arguments: movie),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: const FadeInImage(
-                placeholder: AssetImage('assets/no-image.jpg'),
-                image: NetworkImage('https://via.placeholder.com/300x400'),
+              child: FadeInImage(
+                placeholder: const AssetImage('assets/no-image.jpg'),
+                image: NetworkImage(movie.fullPosterImg),
                 fit: BoxFit.cover,
                 width: 130,
                 height: 190,
@@ -83,8 +124,8 @@ class _MoviePoster extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          const Text(
-            'Harry Potter y la piedra filosofal',
+          Text(
+            movie.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,

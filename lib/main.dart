@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       title: 'Material App',
       initialRoute: AppRoutes.initialRoute,
       routes: AppRoutes.getRoutes(),
-      theme: ThemeData.light()
+      theme: ThemeData.dark()
           .copyWith(appBarTheme: const AppBarTheme(color: Colors.indigo)),
     );
   }

@@ -13,6 +13,7 @@ class MoviesProvider extends ChangeNotifier {
   Map<int, List<Cast>> movieCast = {};
 
   int popularPage = 0;
+  bool isFetchingPopular = false;
 
   MoviesProvider() {
     getOnDisplayMovies();
@@ -28,11 +29,14 @@ class MoviesProvider extends ChangeNotifier {
   }
 
   getPopularMovies() async {
+    if (isFetchingPopular) return;
+    isFetchingPopular = true;
     popularPage++;
     final jsonData = await _getJsonData('3/movie/popular', popularPage);
     final popularMoviesResponse = PopularMoviesResponse.fromJson(jsonData);
     popularMovies = [...popularMovies, ...popularMoviesResponse.results];
     notifyListeners();
+    isFetchingPopular = false;
   }
 
   Future<String> _getJsonData(String endpoint, [int? page]) async {
@@ -53,5 +57,17 @@ class MoviesProvider extends ChangeNotifier {
       movieCast[movieId] = creditsResponse.cast;
     }
     return movieCast[movieId]!;
+  }
+
+  Future<List<Movie>> searchMovies(String query) async {
+    final url = Uri.https(_baseUrl, '3/search/movie', {
+      'api_key': _apiKey,
+      'language': _language,
+      'query': query,
+    });
+
+    final response = await http.get(url);
+    final searchResponse = SearchMovieResponse.fromJson(response.body);
+    return searchResponse.results;
   }
 }

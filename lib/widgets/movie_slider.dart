@@ -5,8 +5,10 @@ import 'package:movies_app/routes/routes.dart';
 class MovieSlider extends StatelessWidget {
   final List<Movie> movies;
   final String title;
+  final Function? onEndScroll;
 
-  const MovieSlider({Key? key, required this.movies, required this.title})
+  const MovieSlider(
+      {Key? key, required this.movies, required this.title, this.onEndScroll})
       : super(key: key);
 
   @override
@@ -21,7 +23,7 @@ class MovieSlider extends StatelessWidget {
             title: title,
           ),
           const SizedBox(height: 10),
-          _MoviesList(movies: movies)
+          _MoviesList(movies: movies, onEndScroll: onEndScroll),
         ],
       ),
     );
@@ -49,10 +51,12 @@ class _MovieSliderTitle extends StatelessWidget {
 
 class _MoviesList extends StatefulWidget {
   final List<Movie> movies;
+  final Function? onEndScroll;
 
   const _MoviesList({
     Key? key,
     required this.movies,
+    this.onEndScroll,
   }) : super(key: key);
 
   @override
@@ -68,7 +72,9 @@ class _MoviesListState extends State<_MoviesList> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent) {
-        print('Scrolled to bottom');
+        if (widget.onEndScroll != null) {
+          widget.onEndScroll!();
+        }
       }
     });
   }
@@ -112,14 +118,17 @@ class _MoviePoster extends StatelessWidget {
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, AppRoutes.details,
                 arguments: movie),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: FadeInImage(
-                placeholder: const AssetImage('assets/no-image.jpg'),
-                image: NetworkImage(movie.fullPosterImg),
-                fit: BoxFit.cover,
-                width: 130,
-                height: 190,
+            child: Hero(
+              tag: movie.id,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: FadeInImage(
+                  placeholder: const AssetImage('assets/no-image.jpg'),
+                  image: NetworkImage(movie.fullPosterImg),
+                  fit: BoxFit.cover,
+                  width: 130,
+                  height: 190,
+                ),
               ),
             ),
           ),

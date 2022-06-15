@@ -71,7 +71,7 @@ class _MoviesListState extends State<_MoviesList> {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent) {
+          _scrollController.position.maxScrollExtent - 500) {
         if (widget.onEndScroll != null) {
           widget.onEndScroll!();
         }
@@ -118,17 +118,14 @@ class _MoviePoster extends StatelessWidget {
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, AppRoutes.details,
                 arguments: movie),
-            child: Hero(
-              tag: movie.id,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: FadeInImage(
-                  placeholder: const AssetImage('assets/no-image.jpg'),
-                  image: NetworkImage(movie.fullPosterImg),
-                  fit: BoxFit.cover,
-                  width: 130,
-                  height: 190,
-                ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: FadeInImage(
+                placeholder: const AssetImage('assets/no-image.jpg'),
+                image: NetworkImage(movie.fullPosterImg),
+                fit: BoxFit.cover,
+                width: 130,
+                height: 190,
               ),
             ),
           ),
